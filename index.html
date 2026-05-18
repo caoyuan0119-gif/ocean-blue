@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>你是哪种海洋生物？</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  background: #020d18;
+  color: #d8eff5;
+  font-family: 'Noto Sans SC', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Ocean background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 10%, rgba(62,201,224,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(13,58,82,0.15) 0%, transparent 50%),
+    linear-gradient(180deg, #020d18 0%, #041520 50%, #020810 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 1.2rem 5rem;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ════════════════
+   INTRO
+════════════════ */
+#intro { padding-top: 2.5rem; text-align: center; }
+
+.brand {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: rgba(90,154,170,0.6);
+  margin-bottom: 2rem;
+}
+
+.creatures-row {
+  font-size: 2rem;
+  margin: 1.5rem 0;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.intro-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 2.8rem;
+  font-weight: 900;
+  line-height: 1.2;
+  color: #d8eff5;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 40px rgba(62,201,224,0.2);
+}
+
+.intro-title span {
+  color: #3ec9e0;
+  text-shadow: 0 0 20px rgba(62,201,224,0.6);
+}
+
+.intro-sub {
+  font-size: 0.88rem;
+  color: rgba(90,154,170,0.8);
+  line-height: 1.9;
+  margin-bottom: 2rem;
+}
+
+.intro-sub em { color: #7effd4; font-style: normal; }
+
+.type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.type-chip {
+  border: 1px solid rgba(62,201,224,0.2);
+  background: rgba(13,58,82,0.3);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+}
+
+.chip-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.chip-code {
+  font-size: 0.65rem;
+  color: #3ec9e0;
+  background: rgba(62,201,224,0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.chip-name { color: #d8eff5; font-size: 0.82rem; }
+
+.btn-start {
+  display: block;
+  width: 100%;
+  background: rgba(62,201,224,0.12);
+  border: 1px solid rgba(62,201,224,0.5);
+  color: #3ec9e0;
+  padding: 1.1rem;
+  border-radius: 12px;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 20px rgba(62,201,224,0.1);
+}
+
+.btn-start:hover, .btn-start:active {
+  background: rgba(62,201,224,0.2);
+  border-color: #3ec9e0;
+  box-shadow: 0 0 30px rgba(62,201,224,0.25);
+}
+
+.fine-print {
+  text-align: center;
+  font-size: 10px;
+  color: rgba(90,154,170,0.4);
+  margin-top: 0.8rem;
+}
+
+/* ════════════════
+   QUIZ
+════════════════ */
+#quiz { padding-top: 2rem; }
+
+.quiz-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.q-num {
+  font-family: monospace;
+  font-size: 12px;
+  color: #3ec9e0;
+  letter-spacing: 2px;
+}
+
+.q-axis {
+  font-size: 10px;
+  color: rgba(90,154,170,0.6);
+  border: 1px solid rgba(62,201,224,0.2);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.progress-bar {
+  height: 3px;
+  background: rgba(62,201,224,0.1);
+  border-radius: 2px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, #0d3a52, #3ec9e0);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 8px rgba(62,201,224,0.4);
+}
+
+.q-card {
+  background: rgba(7,36,56,0.6);
+  border: 1px solid rgba(62,201,224,0.18);
+  border-radius: 20px;
+  padding: 1.8rem 1.5rem 1.5rem;
+  margin-bottom: 1.2rem;
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+}
+
+.q-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(62,201,224,0.5), transparent);
+}
+
+.q-scene { font-size: 2rem; margin-bottom: 0.8rem; display: block; }
+
+.q-text {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.7;
+  color: #d8eff5;
+  margin-bottom: 0.3rem;
+}
+
+.q-hint { font-size: 0.75rem; color: rgba(90,154,170,0.6); }
+
+.opts { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.opt {
+  background: rgba(4,21,32,0.7);
+  border: 1px solid rgba(62,201,224,0.15);
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-align: left;
+  width: 100%;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.opt:hover, .opt:active {
+  border-color: rgba(62,201,224,0.45);
+  background: rgba(26,106,138,0.2);
+  transform: translateX(3px);
+}
+
+.opt.selected {
+  border-color: #3ec9e0;
+  background: rgba(62,201,224,0.12);
+  box-shadow: 0 0 15px rgba(62,201,224,0.1);
+}
+
+.opt-key {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  border: 1px solid rgba(62,201,224,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #3ec9e0;
+  flex-shrink: 0;
+  font-family: monospace;
+}
+
+.opt.selected .opt-key {
+  background: #3ec9e0;
+  color: #020d18;
+  border-color: #3ec9e0;
+}
+
+.opt-content { flex: 1; }
+.opt-main { font-size: 0.88rem; color: #d8eff5; line-height: 1.5; }
+.opt-sub { font-size: 0.72rem; color: rgba(90,154,170,0.6); margin-top: 2px; }
+.opt.selected .opt-sub { color: rgba(62,201,224,0.6); }
+
+/* ════════════════
+   RESULT
+════════════════ */
+#result { padding-top: 2rem; }
+
+.result-hero {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.result-img {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 25px rgba(62,201,224,0.5));
+  margin: 0 auto 0.8rem;
+  display: block;
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.result-label {
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: rgba(90,154,170,0.6);
+  margin-bottom: 0.4rem;
+}
+
+.result-code {
+  font-family: monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 5px;
+  color: #3ec9e0;
+  text-shadow: 0 0 15px rgba(62,201,224,0.6);
+  margin-bottom: 0.4rem;
+}
+
+.result-name {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 2rem;
+  font-weight: 900;
+  color: #d8eff5;
+}
+
+.result-tagline {
+  font-size: 0.82rem;
+  color: rgba(90,154,170,0.7);
+  margin-top: 0.3rem;
+  font-style: italic;
+}
+
+/* Panels */
+.panel {
+  background: rgba(7,36,56,0.55);
+  border: 1px solid rgba(62,201,224,0.15);
+  border-radius: 16px;
+  padding: 1.3rem;
+  margin-bottom: 0.8rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(62,201,224,0.3), transparent);
+}
+
+.panel.dark {
+  background: rgba(2,8,16,0.8);
+  border-color: rgba(62,201,224,0.2);
+}
+
+.panel.red {
+  background: rgba(20,5,5,0.6);
+  border-color: rgba(255,107,107,0.2);
+}
+
+.panel-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: rgba(62,201,224,0.6);
+  margin-bottom: 0.7rem;
+  font-family: monospace;
+}
+
+.panel.red .panel-label { color: rgba(255,150,150,0.6); }
+
+.panel-icon { font-size: 1rem; margin-bottom: 0.3rem; display: block; }
+
+.panel-text {
+  font-size: 0.87rem;
+  line-height: 1.9;
+  color: rgba(216,239,245,0.85);
+}
+
+.panel.dark .panel-text { color: rgba(90,154,170,0.9); }
+.panel.red .panel-text { color: rgba(255,200,200,0.85); font-style: italic; }
+
+/* Axes */
+.axes { display: flex; flex-direction: column; gap: 1rem; }
+.axis-row { }
+.axis-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  margin-bottom: 5px;
+  font-family: monospace;
+}
+.axis-end { color: rgba(90,154,170,0.5); }
+.axis-end.lit { color: #3ec9e0; text-shadow: 0 0 8px rgba(62,201,224,0.5); }
+.axis-track {
+  height: 7px;
+  background: rgba(62,201,224,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.axis-bar {
+  height: 100%;
+  background: linear-gradient(to right, #0d3a52, #3ec9e0);
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(62,201,224,0.3);
+  transition: width 1s ease;
+}
+
+/* Traits */
+.traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.8rem;
+}
+.trait {
+  border: 1px solid rgba(62,201,224,0.25);
+  color: #3ec9e0;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(62,201,224,0.06);
+}
+
+/* Compat */
+.compat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+}
+.compat-card {
+  border: 1px solid rgba(62,201,224,0.15);
+  border-radius: 10px;
+  padding: 0.8rem;
+  text-align: center;
+  background: rgba(4,21,32,0.5);
+}
+.compat-img {
+  width: 50px; height: 50px;
+  object-fit: contain;
+  margin-bottom: 4px;
+  filter: drop-shadow(0 0 6px rgba(62,201,224,0.3));
+}
+.compat-name { font-size: 12px; color: #d8eff5; font-weight: 500; }
+.compat-rel { font-size: 10px; color: rgba(90,154,170,0.6); margin-top: 2px; }
+
+/* Quote */
+.quote-panel {
+  background: rgba(13,58,82,0.35);
+  border: 1px solid rgba(62,201,224,0.2);
+  border-radius: 16px;
+  padding: 1.6rem 1.5rem;
+  margin-bottom: 0.8rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.quote-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #3ec9e0, transparent);
+  opacity: 0.4;
+}
+
+.big-q {
+  position: absolute;
+  top: -1rem; left: 0.8rem;
+  font-size: 7rem;
+  color: rgba(62,201,224,0.06);
+  font-family: serif;
+  line-height: 1;
+}
+
+.quote-text {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.95rem;
+  line-height: 2;
+  color: #d8eff5;
+  position: relative;
+}
+
+.quote-src {
+  font-size: 10px;
+  color: rgba(62,201,224,0.5);
+  margin-top: 0.8rem;
+  letter-spacing: 1px;
+  position: relative;
+}
+
+/* Buttons */
+.btn-row {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+}
+
+.btn-ghost {
+  flex: 1;
+  background: transparent;
+  border: 1px solid rgba(62,201,224,0.25);
+  color: rgba(90,154,170,0.8);
+  padding: 0.9rem;
+  border-radius: 10px;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-ghost:hover, .btn-ghost:active {
+  border-color: rgba(62,201,224,0.5);
+  color: #3ec9e0;
+}
+
+.btn-primary {
+  flex: 2;
+  background: rgba(62,201,224,0.12);
+  border: 1px solid rgba(62,201,224,0.4);
+  color: #3ec9e0;
+  padding: 0.9rem;
+  border-radius: 10px;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+}
+
+.btn-primary:hover, .btn-primary:active {
+  background: rgba(62,201,224,0.2);
+  border-color: #3ec9e0;
+  box-shadow: 0 0 20px rgba(62,201,224,0.2);
+}
+
+.footer-note {
+  text-align: center;
+  font-size: 10px;
+  color: rgba(90,154,170,0.3);
+  margin-top: 1.5rem;
+  letter-spacing: 1.5px;
+  line-height: 2;
+}
+
+/* Poster overlay */
+#posterOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(2,8,16,0.96);
+  overflow-y: auto;
+  padding: 1.5rem 1.2rem 3rem;
+}
+
+.poster-inner {
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.poster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.poster-hint {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: rgba(90,154,170,0.7);
+}
+
+.btn-close {
+  background: transparent;
+  border: 1px solid rgba(62,201,224,0.3);
+  color: #3ec9e0;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+#posterCanvas {
+  width: 100%;
+  border-radius: 16px;
+  display: block;
+  box-shadow: 0 0 40px rgba(62,201,224,0.2);
+}
+
+.poster-save-hint {
+  text-align: center;
+  font-size: 11px;
+  color: rgba(90,154,170,0.4);
+  margin-top: 0.8rem;
+  line-height: 1.8;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- ══ INTRO ══ -->
+<div class="screen active" id="intro">
+  <p class="brand">海洋卫士公益 × 一个世界 · 2026</p>
+
+  <h1 class="intro-title">你是<br><span>哪种</span><br>海洋生物？</h1>
+
+  <div class="creatures-row">
+    <span>🐋</span><span>🦈</span><span>🐙</span><span>🐬</span>
+    <span>🐡</span><span>🪼</span><span>🐠</span><span>🦭</span><span>🐻‍❄️</span>
+  </div>
+
+  <p class="intro-sub">
+    不是星座，不是血型。<br>
+    是<em>8个灵魂拷问</em>，12种深海人格，<br>
+    还有一点点有根据的调侃。
+  </p>
+
+  <div class="type-grid" id="typeGrid"></div>
+
+  <button class="btn-start" id="startBtn">潜入深海 · 开始测试</button>
+  <p class="fine-print">约3分钟 · 本测试不做任何科学承诺但保证有趣</p>
+</div>
+
+<!-- ══ QUIZ ══ -->
+<div class="screen" id="quiz">
+  <div class="quiz-top">
+    <span class="q-num" id="qNum">01 / 08</span>
+    <span class="q-axis" id="qAxis">探测中</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="q-card">
+    <span class="q-scene" id="qScene"></span>
+    <div class="q-text" id="qText"></div>
+    <div class="q-hint" id="qHint"></div>
+  </div>
+  <div class="opts" id="opts"></div>
+</div>
+
+<!-- ══ RESULT ══ -->
+<div class="screen" id="result">
+  <div class="result-hero">
+    <p class="result-label">你的深海人格类型</p>
+    <img class="result-img" id="rImg" src="" alt="">
+    <p class="result-code" id="rCode"></p>
+    <p class="result-name" id="rName"></p>
+    <p class="result-tagline" id="rTagline"></p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">人格维度分析</div>
+    <div class="axes" id="rAxes"></div>
+  </div>
+
+  <div class="panel">
+    <span class="panel-icon">✦</span>
+    <div class="panel-label">你是这种人</div>
+    <div class="panel-text" id="rDesc"></div>
+    <div class="traits" id="rTraits"></div>
+  </div>
+
+  <div class="panel">
+    <span class="panel-icon">👁</span>
+    <div class="panel-label">别人眼中的你</div>
+    <div class="panel-text" id="rOthers"></div>
+  </div>
+
+  <div class="panel dark">
+    <span class="panel-icon">🌑</span>
+    <div class="panel-label">阴暗面（真话时间）</div>
+    <div class="panel-text" id="rShadow"></div>
+  </div>
+
+  <div class="panel red">
+    <span class="panel-icon">🗡️</span>
+    <div class="panel-label">朋友补刀</div>
+    <div class="panel-text" id="rStab"></div>
+  </div>
+
+  <div class="panel">
+    <span class="panel-icon">💫</span>
+    <div class="panel-label">和你最搭的</div>
+    <div class="compat-grid" id="rCompat"></div>
+  </div>
+
+  <div class="quote-panel">
+    <div class="big-q">"</div>
+    <div class="quote-text" id="rQuote"></div>
+    <div class="quote-src" id="rSrc"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-ghost" id="retryBtn">再测一次</button>
+    <button class="btn-primary" id="posterBtn">生成专属海报 ↗</button>
+  </div>
+  <p class="footer-note">海洋卫士公益 × 一个世界<br>2026 国际海洋日 · 深圳<br>让更多人看见海洋，才算真正守护它</p>
+</div>
+
+</div><!-- /app -->
+
+<!-- ══ POSTER ══ -->
+<div id="posterOverlay">
+  <div class="poster-inner">
+    <div class="poster-header">
+      <span class="poster-hint">长按图片保存到相册</span>
+      <button class="btn-close" id="closeBtn">关闭</button>
+    </div>
+    <canvas id="posterCanvas"></canvas>
+    <p class="poster-save-hint">长按图片 → 保存图片 → 发朋友圈<br>让朋友也来测测</p>
+  </div>
+</div>
+
+<script>
+// ── IMAGE BASE URL ──
+const BASE = 'https://caoyuan0119-gif.github.io/ocean-blue/';
+
+const IMGS = {
+  whale:'whale.png', orca:'orca.png', shark:'shark.png',
+  dolphin:'dolphin.png', octopus:'octopus.png', turtle:'turtle.png',
+  coral:'coral.png', jellyfish:'jellyfish.png', pufferfish:'pufferfish.png',
+  nemo:'nemo.png', seal:'seal.png', polarbear:'polarbear.png'
+};
+
+function img(key){ return BASE + IMGS[key]; }
+
+// ── CREATURES ──
+const C = {
+  whale:{
+    key:'whale', emoji:'🐋', code:'WDFK', name:'座头鲸', tagline:'沉默的史诗歌手',
+    axes:{WC:15,DS:80,FT:28,DK:22},
+    desc:'你是那种在群聊里潜水三个月、突然发一条消息让所有人「这人还活着？」的类型。你不是没有想法，你只是觉得大部分场合不值得你开口。你脑子里随时在跑一部史诗级内心独白，但说出来的只有「嗯」「哦」「还好」。深度是你的标配，表达是你的选修课，而且你一直在逃课。',
+    others:'别人觉得你神秘、有深度，靠近你需要一点勇气。但一旦开口，他们会庆幸自己等了这么久。你朋友圈点赞的人永远不多，但个个都是真的。',
+    shadow:'你最大的问题是：你以为沉默是留白，别人以为你不在乎。你把「不解释」当成性格，但有时候只是懒得沟通。你会为一件三年前的事突然失眠，但当时一个字都没说。你的内心是太平洋，你的表达是一条微信——还是已读不回的那种。',
+    stab:'你转发过「内向的人其实很深刻」这类文章，并且觉得说的就是自己。',
+    traits:['深水思考者','已读不回型','情感浓度极高','偶发性神来之笔'],
+    compat:[{key:'dolphin',n:'白海豚',r:'帮你把话说出来'},{key:'octopus',n:'章鱼',r:'同频深水生物'}],
+    quote:'我在这片海游唱了数千公里。\n没有人听见，\n但我没有停。',
+    src:'座头鲸的歌可以传播整个太平洋 · 海洋卫士公益'
+  },
+  orca:{
+    key:'orca', emoji:'🐋', code:'CDTD', name:'虎鲸', tagline:'黑白分明的族群领袖',
+    axes:{WC:72,DS:30,FT:75,DK:82},
+    desc:'你是那种开口之前全场安静、开口之后没人反驳的类型。不是因为你强硬，是因为你说的通常是对的，而且大家都知道。你有极强的家族意识，对自己人好得没话说，对圈子外的人礼貌但疏远——你的世界分得很清楚，黑就是黑，白就是白，你不太理解灰色地带存在的意义。',
+    others:'你的朋友不多但极度忠诚，你的敌人不多但记得清楚。大家在你面前会不自觉坐直——不是因为你要求，是因为你就是这样一种气场。',
+    shadow:'你的阴暗面是：你把「黑白分明」活成了「非我即敌」。你对自己人忠诚得感天动地，但一旦有人越过你的边界，你的报复心会让自己都吓一跳。',
+    stab:'你朋友圈分组的复杂程度，可能比你的人际关系还难理解。',
+    traits:['天然权威感','极度护短','黑白人格','报复心强但有原则'],
+    compat:[{key:'dolphin',n:'白海豚',r:'软化你的人'},{key:'shark',n:'大白鲨',r:'势均力敌的对手'}],
+    quote:'我在野外可以活九十年。\n在这里，\n我已经不记得海是什么味道了。',
+    src:'虎鲸圈养平均寿命不足野生三分之一 · 海洋卫士公益'
+  },
+  shark:{
+    key:'shark', emoji:'🦈', code:'DSTD', name:'大白鲨', tagline:'永不停歇的前行者',
+    axes:{WC:60,DS:25,FT:78,DK:85},
+    desc:'你是那种开会还没结束就已经在想下一步怎么落地的人。你的字典里没有「等一下」，只有「现在」和「为什么还没做」。你不需要鼓励，不需要掌声，甚至不太需要别人——你只需要一个目标和足够大的空间。',
+    others:'朋友们知道找你办事靠谱，但也知道你催人的时候不太好受。你是那种「没有你不行但有你压力很大」的存在——当然，你不知道这件事。',
+    shadow:'你的阴暗面是：你把所有人的速度都当成自己的参照系，然后对「慢」感到莫名烦躁。你以为自己在推进事情，有时候只是在推进自己、顺便碾压别人。',
+    stab:'你催过别人进度，但从没觉得自己在催——你只是「提醒」了十七次。',
+    traits:['行动力爆表','极简决策','天然领导力','催人不自知'],
+    compat:[{key:'dolphin',n:'白海豚',r:'你缺的情感缓冲'},{key:'turtle',n:'玳瑁龟',r:'让你慢下来的人'}],
+    quote:'你怕我。\n但我这一生，\n从没见过你。\n是谁，更陌生？',
+    src:'鲨鱼每小时被杀11,400条 · 海洋卫士公益'
+  },
+  dolphin:{
+    key:'dolphin', emoji:'🐬', code:'CSFD', name:'中华白海豚', tagline:'天生的连接者',
+    axes:{WC:82,DS:28,FT:22,DK:70},
+    desc:'你是那种进一个新群三天内就认识所有人、还知道谁跟谁有过节的存在。你的情绪雷达二十四小时开机，别人眼神不对你就知道今天发生了什么。你真的在乎人，不是表演的那种——这让你成为朋友里的情绪基建，大家的崩溃都往你这里倒，因为你接得住。代价是你自己崩溃的时候，不知道该找谁。',
+    others:'大家都喜欢你，因为你让人感觉被看见。你是群体里的情绪稳定器，但没人知道这台机器也需要充电。',
+    shadow:'你的阴暗面是：你太擅长照顾别人的感受，以至于忘了自己也有感受。你经常「算了，不说了」，然后把委屈咽回去。你以为自己是海豚，有时候更像一块海绵——什么都吸，吸满了也不拧。',
+    stab:'你帮朋友分析感情问题的时间，加起来够读完一个MBA了。',
+    traits:['共情力满级','情绪海绵','社交天才','累了不说型'],
+    compat:[{key:'shark',n:'大白鲨',r:'互补搭档'},{key:'whale',n:'座头鲸',r:'你最想照顾的人'}],
+    quote:'我就住在\n你来深圳坐船经过的那片海。\n你有没有，\n往窗外看过一眼。',
+    src:'中华白海豚正在从珠江口消失 · 海洋卫士公益'
+  },
+  octopus:{
+    key:'octopus', emoji:'🐙', code:'WDTK', name:'章鱼', tagline:'神秘的多线程思考者',
+    axes:{WC:18,DS:78,FT:72,DK:22},
+    desc:'你同时有八个想法在跑，而且全部都还挺有道理。你解决问题的方式经常让人觉得「这是什么路子」，但结果又偏偏是对的。你不喜欢被看穿，因为你知道一旦被看穿就少了很多乐趣——包括观察别人试图看穿你的过程。',
+    others:'朋友觉得你聪明、神秘，有时候又觉得你有点累。你给出的建议经常出人意料，但事后都会发现你是对的——你自己也知道你是对的，这是你最贱的地方。',
+    shadow:'你的阴暗面是：你把复杂当成深刻，有时候只是不想被理解。你能把一件简单的事想出十七个维度，然后陷进去出不来，最后什么都没做。',
+    stab:'你解释一件事的时候，对方已经后悔问了。',
+    traits:['多线程思维','神秘感天然','把简单复杂化','独立解题王'],
+    compat:[{key:'whale',n:'座头鲸',r:'同频深水生物'},{key:'dolphin',n:'白海豚',r:'帮你落地的人'}],
+    quote:'我可以变成任何颜色。\n但我从没忘记，\n我是谁。',
+    src:'章鱼是地球上最聪明的无脊椎动物 · 海洋卫士公益'
+  },
+  turtle:{
+    key:'turtle', emoji:'🐢', code:'WDFK', name:'玳瑁海龟', tagline:'沉默的长跑选手',
+    axes:{WC:18,DS:72,FT:32,DK:18},
+    desc:'你是那种「慢热」说的就是你的类型——但真正了解你的人都知道，你一旦认定一件事或一个人，比谁都稳。你不追热点，不赶deadline，你有自己的节奏，而且你已经用结果证明过这个节奏没问题。',
+    others:'别人觉得你稳、靠谱、不会乱来。你是那种在风浪里还能保持镇定的人，大家下意识地信任你——有时候信任到忘了你也是人。',
+    shadow:'你的阴暗面是：你的「稳」有时候是真的稳，有时候是懒得动。你错过了一些机会，不是因为没能力，是因为「再等等看」等到窗口关了。',
+    stab:'你手机里有几个「以后再看」的收藏夹，一个都没打开过。',
+    traits:['慢热但极稳','自我节奏','沉默扛着型','不轻易动心'],
+    compat:[{key:'whale',n:'座头鲸',r:'最理解你的人'},{key:'dolphin',n:'白海豚',r:'给你活力的人'}],
+    quote:'我的壳，长了我一辈子。\n它在你手上，\n叫做工艺品。',
+    src:'玳瑁因龟壳贸易濒临灭绝 · 海洋卫士公益'
+  },
+  coral:{
+    key:'coral', emoji:'🪸', code:'CSTK', name:'珊瑚虫', tagline:'低调的生态建造者',
+    axes:{WC:65,DS:28,FT:62,DK:32},
+    desc:'你是那种离开之后大家才发现「哦原来这件事一直是他在做」的类型。你不抢风头，不争功劳，你只是默默把该做的事做完，然后等别人终于注意到。',
+    others:'朋友们有时候忘了感谢你，但当你不在的时候，他们才发现少了什么。你是那种「基建型」人格——没人夸基建，但没了基建什么都塌。',
+    shadow:'你的阴暗面是：你把「不计较」活成了一种人设，久了自己也信了，然后有一天突然爆发，把所有人都吓到。你的付出是真实的，但你从不开口要求回报，然后在心里默默记账。',
+    stab:'你做了很多，但你的微信签名大概率是空的。',
+    traits:['低调建设者','长期主义','默默记账型','不声张的力量'],
+    compat:[{key:'dolphin',n:'白海豚',r:'一眼看见你的人'},{key:'shark',n:'大白鲨',r:'帮你发声的人'}],
+    quote:'健康的珊瑚礁，每天都这么吵。\n当它安静下来的那天，\n就是它死去的那天。',
+    src:'珊瑚礁白化正在加速 · 海洋卫士公益'
+  },
+  jellyfish:{
+    key:'jellyfish', emoji:'🪼', code:'WSFK', name:'水母', tagline:'随波逐流的哲学家',
+    axes:{WC:22,DS:25,FT:35,DK:15},
+    desc:'你是那种「反正到哪都能活」的类型。没有大脑，没有心脏，照样在地球上存活了六亿年——你把这叫做「顺势而为」，别人叫它「躺平」。你对方向没有执念，风往哪吹你往哪飘，但你有一种天然的优雅，让人觉得这不是随便，是境界。',
+    others:'别人觉得你神秘、飘逸，亲近不得又舍不得走。你有一种特别的气质，让人想靠近，靠近了又说不清你在想什么。',
+    shadow:'你的阴暗面是：你以为自己在顺流，有时候只是在漂。你没有目的地，不是因为哪里都好，是因为选择本身让你焦虑。你触碰别人会蜇人，但你自己不一定知道。',
+    stab:'你的人生规划文档打开过三次，每次都没写完就关了。',
+    traits:['随遇而安','无骨气质','被动哲学家','蜇人不自知'],
+    compat:[{key:'dolphin',n:'白海豚',r:'给你方向感的人'},{key:'octopus',n:'章鱼',r:'你们都飘，但方式不同'}],
+    quote:'没有大脑，没有心脏。\n但我在这片海\n活了六亿年。\n你呢？',
+    src:'水母是地球上最古老的多细胞动物之一 · 海洋卫士公益'
+  },
+  pufferfish:{
+    key:'pufferfish', emoji:'🐡', code:'WSTK', name:'河豚', tagline:'炸毛的边界卫士',
+    axes:{WC:20,DS:28,FT:38,DK:25},
+    desc:'你平时看起来圆滚滚、人畜无害，但一旦有人越界，你会在零点三秒内膨胀成另一个生物。你对安全感的需求很高，所以你在靠近之前先学会了防御。你不是真的凶，你只是需要确认对方值得信任，才会把刺收起来。',
+    others:'第一次见你的人觉得你有点难相处，见过三次的人觉得你其实挺可爱，见过十次的人知道你是真的好人——只是门槛有点高。',
+    shadow:'你的阴暗面是：你的防御系统太灵敏，有时候误伤了真心靠近的人。你的刺是你的铠甲，也是你最大的孤独来源——因为穿着铠甲的时候，抱不到人，也抱不了人。',
+    stab:'你「没事」的语气有十七种，每一种意思都不一样，但你从不解释。',
+    traits:['边界感极强','圆润外表刺心内','慢热防御型','炸毛预警系统'],
+    compat:[{key:'turtle',n:'玳瑁龟',r:'有耐心等你收刺'},{key:'dolphin',n:'白海豚',r:'唯一敢靠近你的'}],
+    quote:'我不是天生有刺的。\n是你们，\n教我膨胀的。',
+    src:'河豚的刺是防御，不是攻击 · 海洋卫士公益'
+  },
+  nemo:{
+    key:'nemo', emoji:'🐠', code:'CSFD', name:'小丑鱼', tagline:'勇敢的小透明',
+    axes:{WC:68,DS:30,FT:25,DK:72},
+    desc:'你看起来不大，但你做过的事不小。你是那种明明可以躲在珊瑚礁里一辈子，偏偏为了在乎的人游出去的类型。你对「家」的执念很深，对关系的忠诚度高得离谱。你不是最强的，但你是最不会放弃的。',
+    others:'朋友们知道你会来，不知道你也会累。你是那种「就算我很难，我也会撑住」的类型——大家感激你，但有时候忘了问你还好不好。',
+    shadow:'你的阴暗面是：你太依赖那一片珊瑚礁了。你把「忠诚」变成了「不敢离开」，把「在乎」变成了有时候的「控制」。你的爱是真实的，但爱得太用力，有时候会让人喘不过气。',
+    stab:'你为别人两肋插刀，然后默默等对方注意到——等了很久。',
+    traits:['忠诚至死','小身体大能量','爱得用力型','找得到家'],
+    compat:[{key:'coral',n:'珊瑚虫',r:'你们互相依存'},{key:'whale',n:'座头鲸',r:'你懂它的孤独'}],
+    quote:'我不是最强的。\n但我是\n最不会放弃的那个。',
+    src:'小丑鱼与珊瑚礁共生，珊瑚消失它们也将消失 · 海洋卫士公益'
+  },
+  seal:{
+    key:'seal', emoji:'🦭', code:'CSFK', name:'海豹', tagline:'自带流量的社交咖',
+    axes:{WC:85,DS:25,FT:20,DK:25},
+    desc:'你是那种走到哪里都有人围过来的类型，不是因为你做了什么，就是因为你在那里。你有一种天然的亲和力，让陌生人三分钟内就觉得认识你很久了。你享受被喜欢，也真的喜欢别人——这个双向奔赴让你的社交成本极低，回报极高。你圆润可爱，但你知道自己在干什么。',
+    others:'大家觉得你好相处、好玩、好笑，在你身边不会冷场。你是那种「有他在就行」的存在——不是因为你多能干，是因为你让所有人都放松了。',
+    shadow:'你太习惯被喜欢了，一旦有人对你冷淡，你会花大量时间去想「我哪里出问题了」。你的自我价值感和别人的反应绑定得有点紧——热闹的时候你很好，安静下来你会不知道自己是谁。',
+    stab:'你在陌生人面前表现得比在最亲近的人面前还好——后者已经发现了。',
+    traits:['天然亲和力','自带流量','卖萌专业户','热闹散场后空空的'],
+    compat:[{key:'dolphin',n:'白海豚',r:'同频社交搭档'},{key:'whale',n:'座头鲸',r:'你们正好互补'}],
+    quote:'我是海里最会卖萌的。\n但没有人知道，\n我也会溺水。',
+    src:'海豹因气候变化和猎杀数量持续减少 · 海洋卫士公益'
+  },
+  polarbear:{
+    key:'polarbear', emoji:'🐻‍❄️', code:'WSTD', name:'北极熊', tagline:'最后的独行者',
+    axes:{WC:12,DS:28,FT:35,DK:78},
+    desc:'你是那种不需要人群、不需要掌声、一个人扛着全世界也能走下去的类型。你看起来强大到不需要任何东西，但你只是不说而已。你不是冷漠，你是把温度都用在了真正重要的地方。你是那种「我没事」说得最真诚、但其实最需要有人问第二遍的类型。',
+    others:'别人觉得你强大、独立、不需要帮助。所以没人帮你。你扛着一切的样子让人放心，也让人心疼——只是后者没人说出口。',
+    shadow:'你的阴暗面是：你太能扛了，扛到别人真的以为你不需要帮助。你习惯独自面对一切，但孤独久了会结冰——你自己结的，化起来也只有你自己知道有多慢。',
+    stab:'你说「我一个人可以」的时候，希望有人说「但你不用一个人」——但你说完就走了，没给人机会。',
+    traits:['独行侠','扛住一切型','不开口求助','冷外表暖内核'],
+    compat:[{key:'whale',n:'座头鲸',r:'同样沉默的灵魂'},{key:'dolphin',n:'白海豚',r:'融化你的人'}],
+    quote:'我不住在海里。\n但海洋变暖的每一度，\n都在缩小我的世界。\n我们，住在同一个地球。',
+    src:'北极熊因海冰融化正在失去栖息地 · 海洋卫士公益'
+  }
+};
+
+// ── QUESTIONS ──
+const Q = [
+  {scene:'🏝️',hint:'独处 vs 群体',text:'周末突然没有任何安排，你的第一反应是……',sub:'诚实回答，不用显得社交牛',axis:'WC',
+    opts:[{t:'终于！关机，一个人宅着',s:'这才叫人生',v:'W'},{t:'赶紧拉群，今晚出去嗨',s:'空白时间是浪费',v:'C'},{t:'先独处半天，下午再约人',s:'中间路线选手',v:'W'},{t:'发朋友圈看有没有人找我',s:'被动社交大师',v:'C'}]},
+  {scene:'🌊',hint:'深思 vs 直觉',text:'你在海边，面对无边的大海，你在想什么？',sub:'说真话，不是问你有多诗意',axis:'DS',
+    opts:[{t:'人类在宇宙里真的什么都不是……',s:'又开始了',v:'D'},{t:'好美！拍照！发！',s:'活在当下型',v:'S'},{t:'海平面以下不知道是什么',s:'好奇心驱动',v:'D'},{t:'好渴，去买椰子',s:'务实型',v:'S'}]},
+  {scene:'🦑',hint:'感性 vs 理性',text:'朋友让你帮他做一个重要决定，你会……',sub:'不用假装自己很擅长这个',axis:'FT',
+    opts:[{t:'先问他感觉怎么样，感觉最重要',s:'情绪优先派',v:'F'},{t:'列出利弊分析，数据说话',s:'Excel打开ing',v:'T'},{t:'讲个我自己的类似经历',s:'一秒转移话题',v:'F'},{t:'直接告诉他我觉得选哪个',s:'省事一刀流',v:'T'}]},
+  {scene:'🐠',hint:'独处 vs 群体',text:'被人误解了，你通常的处理方式是……',sub:'要诚实，这里没人认识你',axis:'WC',
+    opts:[{t:'算了，解释了也没用，反正我知道就行',s:'沉默是金',v:'W'},{t:'必须解释清楚！不然我睡不着',s:'道理要讲通',v:'C'},{t:'找一个人倾诉一下就好',s:'选择性沟通',v:'C'},{t:'记在心里，下次注意就行',s:'慢慢消化型',v:'W'}]},
+  {scene:'⚓',hint:'行动派 vs 慢节奏',text:'面对一件拖了很久的事，你……',sub:'不用美化，大家都有拖延症',axis:'DK',
+    opts:[{t:'deadline才是最好的生产力',s:'压力转化型',v:'K'},{t:'早就做完了，等deadline很难受',s:'提前型选手',v:'D'},{t:'边想太多边拖，结果没做',s:'思想巨人行动矮人',v:'K'},{t:'拆成小步骤，一步一步来',s:'系统控',v:'D'}]},
+  {scene:'🌑',hint:'深思 vs 直觉',text:'深夜三点，你在做什么（说真的）',sub:'这是匿名的',axis:'DS',
+    opts:[{t:'刷手机，什么都看，什么都不记得',s:'信息洪流冲浪',v:'S'},{t:'想一件三年前说错的话',s:'反刍机器',v:'D'},{t:'在写/画/做什么创作',s:'灵感夜行侠',v:'D'},{t:'已经睡了，我11点睡觉',s:'人类典范',v:'S'}]},
+  {scene:'🦭',hint:'感性 vs 理性',text:'形容一下你在一个团队里的角色',sub:'不要写「我很全能」',axis:'FT',
+    opts:[{t:'负责让大家状态好、气氛好',s:'情绪基建工程师',v:'F'},{t:'负责把任务推进、不脱轨',s:'进度条守护者',v:'T'},{t:'有想法就提，没想法就执行',s:'随机应变型',v:'F'},{t:'一个人闷头干，最后交结果',s:'独狼型选手',v:'T'}]},
+  {scene:'🌏',hint:'行动派 vs 感受派',text:'你觉得「保护海洋」这件事，和你的关系是……',sub:'这题没有标准答案，真的',axis:'DK',
+    opts:[{t:'我想做但不知道从哪做起',s:'善意待机中',v:'K'},{t:'我已经在做一些小事了',s:'践行派',v:'D'},{t:'感觉很重要但跟我日常很远',s:'诚实型',v:'K'},{t:'就是今天来这里的原因',s:'你好，同路人',v:'D'}]},
+];
+
+// ── STATE ──
+let sc = {W:0,C:0,D:0,S:0,F:0,T:0,D2:0,K:0};
+let cur = 0;
+let currentCreature = null;
+
+// ── BUILD INTRO GRID ──
+const keys = Object.keys(C);
+const grid = document.getElementById('typeGrid');
+keys.forEach(k=>{
+  const c = C[k];
+  const chip = document.createElement('div');
+  chip.className = 'type-chip';
+  chip.innerHTML = `<img class="chip-img" src="${img(k)}" alt="${c.name}" onerror="this.style.display='none'"><span class="chip-code">${c.code}</span><span class="chip-name">${c.name}</span>`;
+  grid.appendChild(chip);
+});
+
+// ── EVENT LISTENERS ──
+document.getElementById('startBtn').addEventListener('click', startQuiz);
+document.getElementById('retryBtn').addEventListener('click', restart);
+document.getElementById('posterBtn').addEventListener('click', generatePoster);
+document.getElementById('closeBtn').addEventListener('click', closePoster);
+
+// ── FUNCTIONS ──
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function startQuiz(){
+  sc = {W:0,C:0,D:0,S:0,F:0,T:0,D2:0,K:0};
+  cur = 0;
+  show('quiz');
+  renderQ();
+}
+
+function restart(){
+  document.getElementById('posterOverlay').style.display = 'none';
+  show('intro');
+}
+
+function renderQ(){
+  const q = Q[cur];
+  document.getElementById('qNum').textContent = `0${cur+1} / 0${Q.length}`;
+  document.getElementById('qAxis').textContent = q.hint;
+  document.getElementById('progressFill').style.width = `${(cur/Q.length)*100}%`;
+  document.getElementById('qScene').textContent = q.scene;
+  document.getElementById('qText').textContent = q.text;
+  document.getElementById('qHint').textContent = q.sub;
+
+  const optsEl = document.getElementById('opts');
+  optsEl.innerHTML = '';
+  ['A','B','C','D'].forEach((ltr,i)=>{
+    const o = q.opts[i];
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-key">${ltr}</span><span class="opt-content"><div class="opt-main">${o.t}</div><div class="opt-sub">${o.s}</div></span>`;
+    btn.addEventListener('click', ()=>pick(o.v, q.axis, btn));
+    optsEl.appendChild(btn);
+  });
+}
+
+function pick(val, axis, btn){
+  document.querySelectorAll('.opt').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  if(axis==='DK' && val==='D') sc.D2++;
+  else sc[val] = (sc[val]||0)+1;
+  setTimeout(()=>{
+    cur++;
+    if(cur < Q.length) renderQ();
+    else showResult();
+  }, 350);
+}
+
+function getCreature(){
+  const wc = sc.W>=sc.C?'W':'C';
+  const ds = sc.D>=sc.S?'D':'S';
+  const ft = sc.F>=sc.T?'F':'T';
+  const dk = sc.D2>=sc.K?'D':'K';
+
+  if(wc==='W'&&ds==='S'&&ft==='F'&&dk==='K') return C.jellyfish;
+  if(wc==='W'&&ds==='S'&&ft==='F'&&dk==='D') return C.polarbear;
+  if(wc==='W'&&ds==='S'&&ft==='T') return C.pufferfish;
+  if(wc==='W'&&ds==='D'&&ft==='T') return C.octopus;
+  if(wc==='W'&&ds==='D'&&ft==='F'&&dk==='K') return C.turtle;
+  if(wc==='W'&&ds==='D'&&ft==='F'&&dk==='D') return C.whale;
+  if(wc==='C'&&ft==='F'&&dk==='D') return C.nemo;
+  if(wc==='C'&&ft==='F'&&dk==='K') return C.dolphin;
+  if(wc==='C'&&ft==='T'&&dk==='D'&&ds==='D') return C.orca;
+  if(wc==='C'&&ft==='T'&&dk==='D'&&ds==='S') return C.shark;
+  if(wc==='C'&&ft==='T'&&dk==='K') return C.coral;
+
+  const totals = {
+    whale: sc.W+sc.D+sc.F+sc.K,
+    orca: sc.C+sc.D+sc.T+sc.D2,
+    shark: sc.C+sc.S+sc.T+sc.D2,
+    dolphin: sc.C+sc.S+sc.F+sc.K,
+    octopus: sc.W+sc.D+sc.T,
+    turtle: sc.W+sc.D+sc.F+sc.K,
+    coral: sc.C+sc.T+sc.K,
+    jellyfish: sc.W+sc.S+sc.F+sc.K,
+    pufferfish: sc.W+sc.S+sc.T,
+    nemo: sc.C+sc.F+sc.D2,
+    seal: sc.C+sc.S+sc.F+sc.K,
+    polarbear: sc.W+sc.S+sc.D2,
+  };
+  return C[Object.entries(totals).sort((a,b)=>b[1]-a[1])[0][0]];
+}
+
+function showResult(){
+  const c = getCreature();
+  currentCreature = c;
+
+  const rImg = document.getElementById('rImg');
+  rImg.src = img(c.key);
+  rImg.alt = c.name;
+  rImg.onerror = function(){ this.style.display='none'; };
+
+  document.getElementById('rCode').textContent = c.code;
+  document.getElementById('rName').textContent = c.name;
+  document.getElementById('rTagline').textContent = c.tagline;
+  document.getElementById('rDesc').textContent = c.desc;
+  document.getElementById('rOthers').textContent = c.others;
+  document.getElementById('rShadow').textContent = c.shadow;
+  document.getElementById('rStab').textContent = c.stab;
+  document.getElementById('rQuote').innerHTML = c.quote.replace(/\n/g,'<br>');
+  document.getElementById('rSrc').textContent = c.src;
+
+  document.getElementById('rTraits').innerHTML = c.traits.map(t=>`<span class="trait">${t}</span>`).join('');
+
+  document.getElementById('rCompat').innerHTML = c.compat.map(cp=>`
+    <div class="compat-card">
+      <img class="compat-img" src="${img(cp.key)}" alt="${cp.n}" onerror="this.style.display='none'">
+      <div class="compat-name">${cp.n}</div>
+      <div class="compat-rel">${cp.r}</div>
+    </div>`).join('');
+
+  const axes = [
+    {l:'独处型',r:'群体型',pct:c.axes.WC,lw:c.axes.WC<50},
+    {l:'直觉型',r:'深思型',pct:c.axes.DS,lw:c.axes.DS<50},
+    {l:'感性型',r:'理性型',pct:c.axes.FT,lw:c.axes.FT<50},
+    {l:'慢节奏',r:'行动派',pct:c.axes.DK,lw:c.axes.DK<50},
+  ];
+
+  document.getElementById('rAxes').innerHTML = axes.map(a=>`
+    <div class="axis-row">
+      <div class="axis-ends">
+        <span class="axis-end ${a.lw?'lit':''}">${a.l}</span>
+        <span class="axis-end ${!a.lw?'lit':''}">${a.r}</span>
+      </div>
+      <div class="axis-track">
+        <div class="axis-bar" style="width:0%" data-pct="${a.pct}"></div>
+      </div>
+    </div>`).join('');
+
+  show('result');
+  setTimeout(()=>{
+    document.querySelectorAll('.axis-bar').forEach(el=>{
+      el.style.width = el.dataset.pct + '%';
+    });
+  }, 200);
+}
+
+// ── POSTER ──
+function generatePoster(){
+  if(!currentCreature) return;
+  document.getElementById('posterOverlay').style.display = 'block';
+  window.scrollTo(0,0);
+  const i = new Image();
+  i.crossOrigin = 'anonymous';
+  i.onload = ()=>drawPoster(currentCreature, i);
+  i.onerror = ()=>drawPoster(currentCreature, null);
+  i.src = img(currentCreature.key);
+}
+
+function closePoster(){
+  document.getElementById('posterOverlay').style.display = 'none';
+}
+
+function drawPoster(c, cImg){
+  const pc = document.getElementById('posterCanvas');
+  const W=750, H=2350;
+  pc.width=W; pc.height=H;
+  const cx=pc.getContext('2d');
+
+  function div(y,a=0.25){
+    const g=cx.createLinearGradient(60,0,W-60,0);
+    g.addColorStop(0,'transparent');
+    g.addColorStop(0.5,`rgba(62,201,224,${a})`);
+    g.addColorStop(1,'transparent');
+    cx.fillStyle=g; cx.fillRect(60,y,W-120,1);
+  }
+
+  function wrap(text,x,y,mw,lh,fs=22,col='rgba(216,239,245,0.85)'){
+    cx.font=`${fs}px Arial`; cx.fillStyle=col; cx.textAlign='left';
+    let line='',cy=y;
+    for(let i=0;i<text.length;i++){
+      const t=line+text[i];
+      if(cx.measureText(t).width>mw&&line!==''){cx.fillText(line,x,cy);line=text[i];cy+=lh;}
+      else line=t;
+    }
+    if(line)cx.fillText(line,x,cy);
+    return cy+lh;
+  }
+
+  function box(x,y,w,h,bc='rgba(62,201,224,0.15)',fc='rgba(7,36,56,0.5)'){
+    cx.fillStyle=fc; cx.beginPath(); cx.roundRect(x,y,w,h,16); cx.fill();
+    cx.strokeStyle=bc; cx.lineWidth=1; cx.beginPath(); cx.roundRect(x,y,w,h,16); cx.stroke();
+    const tg=cx.createLinearGradient(x,0,x+w,0);
+    tg.addColorStop(0,'transparent'); tg.addColorStop(0.5,bc); tg.addColorStop(1,'transparent');
+    cx.fillStyle=tg; cx.fillRect(x,y,w,1);
+  }
+
+  // BG
+  const bg=cx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#020d18'); bg.addColorStop(0.5,'#041a28'); bg.addColorStop(1,'#020810');
+  cx.fillStyle=bg; cx.fillRect(0,0,W,H);
+
+  // Glow
+  const g1=cx.createRadialGradient(W/2,0,0,W/2,0,W);
+  g1.addColorStop(0,'rgba(62,201,224,0.1)'); g1.addColorStop(1,'transparent');
+  cx.fillStyle=g1; cx.fillRect(0,0,W,H);
+
+  // Rays
+  for(let i=0;i<7;i++){
+    const rx=W*(0.08+i*0.14),rw=15+i*5;
+    const rg=cx.createLinearGradient(rx,0,rx,H*0.4);
+    rg.addColorStop(0,'rgba(62,201,224,0.06)'); rg.addColorStop(1,'transparent');
+    cx.fillStyle=rg;
+    cx.beginPath(); cx.moveTo(rx-rw*0.3,0); cx.lineTo(rx+rw*0.3,0);
+    cx.lineTo(rx+rw*2,H*0.4); cx.lineTo(rx-rw*0.5,H*0.4); cx.closePath(); cx.fill();
+  }
+
+  // Top border
+  const tb=cx.createLinearGradient(0,0,W,0);
+  tb.addColorStop(0,'transparent'); tb.addColorStop(0.5,'rgba(62,201,224,0.8)'); tb.addColorStop(1,'transparent');
+  cx.fillStyle=tb; cx.fillRect(0,0,W,3);
+
+  // Brand
+  cx.font='400 20px Arial'; cx.fillStyle='rgba(90,154,170,0.6)'; cx.textAlign='center';
+  cx.fillText('海洋卫士公益 × 一个世界 · 2026 国际海洋日',W/2,55);
+
+  // Image
+  if(cImg){
+    cx.save(); cx.shadowColor='rgba(62,201,224,0.5)'; cx.shadowBlur=40;
+    cx.drawImage(cImg,W/2-110,75,220,220); cx.restore();
+  } else {
+    cx.font='140px serif'; cx.textAlign='center'; cx.fillText(c.emoji,W/2,230);
+  }
+
+  // Code
+  cx.font='bold 26px monospace'; cx.fillStyle='#3ec9e0'; cx.textAlign='center';
+  cx.shadowColor='rgba(62,201,224,0.8)'; cx.shadowBlur=15;
+  cx.fillText(c.code,W/2,330); cx.shadowBlur=0;
+
+  // Name
+  cx.font='bold 65px serif'; cx.fillStyle='#d8eff5';
+  cx.shadowColor='rgba(62,201,224,0.2)'; cx.shadowBlur=20;
+  cx.fillText(c.name,W/2,400); cx.shadowBlur=0;
+
+  // Tagline
+  cx.font='italic 26px serif'; cx.fillStyle='rgba(90,154,170,0.8)';
+  cx.fillText(c.tagline,W/2,440);
+
+  div(465,0.3);
+
+  // Axes
+  let y=490;
+  cx.font='500 19px Arial'; cx.fillStyle='rgba(62,201,224,0.6)';
+  cx.textAlign='left'; cx.fillText('人格维度',60,y); y+=28;
+
+  const axes=[
+    {l:'独处型',r:'群体型',pct:c.axes.WC,lw:c.axes.WC<50},
+    {l:'直觉型',r:'深思型',pct:c.axes.DS,lw:c.axes.DS<50},
+    {l:'感性型',r:'理性型',pct:c.axes.FT,lw:c.axes.FT<50},
+    {l:'慢节奏',r:'行动派',pct:c.axes.DK,lw:c.axes.DK<50},
+  ];
+  axes.forEach(a=>{
+    cx.font='20px Arial';
+    cx.textAlign='left'; cx.fillStyle=a.lw?'#3ec9e0':'rgba(90,154,170,0.45)'; cx.fillText(a.l,60,y);
+    cx.textAlign='right'; cx.fillStyle=!a.lw?'#3ec9e0':'rgba(90,154,170,0.45)'; cx.fillText(a.r,W-60,y);
+    y+=12;
+    cx.fillStyle='rgba(62,201,224,0.08)'; cx.beginPath(); cx.roundRect(60,y,W-120,9,4); cx.fill();
+    const bg2=cx.createLinearGradient(60,0,W-60,0);
+    bg2.addColorStop(0,'rgba(13,58,82,0.9)'); bg2.addColorStop(1,'#3ec9e0');
+    cx.fillStyle=bg2; cx.shadowColor='rgba(62,201,224,0.4)'; cx.shadowBlur=5;
+    cx.beginPath(); cx.roundRect(60,y,(W-120)*(a.pct/100),9,4); cx.fill(); cx.shadowBlur=0;
+    y+=38;
+  });
+
+  div(y,0.15); y+=25;
+
+  // Traits
+  cx.font='500 19px Arial'; cx.fillStyle='rgba(62,201,224,0.6)';
+  cx.textAlign='left'; cx.fillText('人格标签',60,y); y+=30;
+  cx.font='21px Arial'; let tx=60;
+  c.traits.forEach(tr=>{
+    const tw=cx.measureText(tr).width+26;
+    if(tx+tw>W-60){tx=60;y+=42;}
+    cx.strokeStyle='rgba(62,201,224,0.3)'; cx.lineWidth=1;
+    cx.fillStyle='rgba(62,201,224,0.06)';
+    cx.beginPath(); cx.roundRect(tx,y-22,tw,32,16); cx.fill(); cx.stroke();
+    cx.fillStyle='#3ec9e0'; cx.textAlign='left'; cx.fillText(tr,tx+13,y-2);
+    tx+=tw+10;
+  });
+  y+=45; div(y,0.15); y+=25;
+
+  // Desc
+  box(40,y,W-80,200);
+  cx.font='19px Arial'; cx.fillStyle='rgba(62,201,224,0.6)'; cx.textAlign='left';
+  cx.fillText('✦  你是这种人',60,y+28);
+  y=wrap(c.desc,60,y+55,W-120,32,21,'rgba(216,239,245,0.85)');
+  y+=25; div(y,0.12); y+=25;
+
+  // Others
+  box(40,y,W-80,155);
+  cx.font='19px Arial'; cx.fillStyle='rgba(62,201,224,0.6)'; cx.textAlign='left';
+  cx.fillText('👁  别人眼中的你',60,y+28);
+  y=wrap(c.others,60,y+55,W-120,30,21,'rgba(216,239,245,0.8)');
+  y+=25; div(y,0.12); y+=25;
+
+  // Shadow
+  box(40,y,W-80,200,'rgba(62,201,224,0.2)','rgba(2,8,16,0.7)');
+  cx.font='19px Arial'; cx.fillStyle='rgba(200,180,180,0.7)'; cx.textAlign='left';
+  cx.fillText('🌑  阴暗面（真话时间）',60,y+28);
+  y=wrap(c.shadow,60,y+55,W-120,30,21,'rgba(180,150,150,0.85)');
+  y+=25; div(y,0.12); y+=25;
+
+  // Stab
+  box(40,y,W-80,80,'rgba(255,107,107,0.2)','rgba(20,5,5,0.5)');
+  cx.font='19px Arial'; cx.fillStyle='rgba(255,150,150,0.6)'; cx.textAlign='left';
+  cx.fillText('🗡️  朋友补刀',60,y+28);
+  cx.font='italic 21px Arial'; cx.fillStyle='rgba(255,200,200,0.8)';
+  cx.fillText(c.stab,60,y+58);
+  y+=100; div(y,0.12); y+=25;
+
+  // Compat
+  cx.font='500 19px Arial'; cx.fillStyle='rgba(62,201,224,0.6)';
+  cx.textAlign='left'; cx.fillText('💫  最搭的',60,y); y+=28;
+  const cw=(W-140)/2;
+  c.compat.forEach((cp,i)=>{
+    const cx2=60+i*(cw+20);
+    box(cx2,y,cw,85);
+    const cImg2=new Image();
+    cImg2.src=img(cp.key);
+    try{ cx.drawImage(cImg2,cx2+8,y+12,60,60); }catch(e){}
+    cx.font='bold 21px Arial'; cx.fillStyle='#d8eff5'; cx.textAlign='left';
+    cx.fillText(cp.n,cx2+75,y+32);
+    cx.font='18px Arial'; cx.fillStyle='rgba(90,154,170,0.7)';
+    cx.fillText(cp.r,cx2+75,y+56);
+  });
+  y+=105; div(y,0.15); y+=25;
+
+  // Quote
+  box(40,y,W-80,175,'rgba(62,201,224,0.2)','rgba(13,58,82,0.35)');
+  cx.font='bold 55px serif'; cx.fillStyle='rgba(62,201,224,0.07)';
+  cx.textAlign='left'; cx.fillText('"',48,y+75);
+  cx.font='italic 25px serif'; cx.fillStyle='rgba(216,239,245,0.9)'; cx.textAlign='center';
+  c.quote.split('\n').forEach((line,i)=>{ cx.fillText(line,W/2,y+35+i*36); });
+  cx.font='17px Arial'; cx.fillStyle='rgba(62,201,224,0.5)';
+  cx.fillText(c.src,W/2,y+158);
+  y+=195; div(y,0.15); y+=25;
+
+  // QR
+  box(W/2-200,y,400,95,'rgba(62,201,224,0.2)','rgba(7,36,56,0.7)');
+  const qrX=W/2-190,qrT=y+16,qrS=64,cell=qrS/7;
+  const qp=[[1,1,1,0,1,1,1],[1,0,1,0,1,0,1],[1,1,1,0,1,1,1],[0,0,0,0,0,0,0],[1,1,1,0,1,1,1],[1,0,1,0,1,0,1],[1,1,1,0,1,1,1]];
+  qp.forEach((row,r)=>row.forEach((v,cc)=>{
+    if(v){cx.fillStyle='rgba(62,201,224,0.85)';cx.fillRect(qrX+cc*cell+0.5,qrT+r*cell+0.5,cell-1,cell-1);}
+  }));
+  cx.font='bold 21px Arial'; cx.fillStyle='#3ec9e0'; cx.textAlign='left';
+  cx.fillText('扫码 · 测测你是哪种海洋生物',qrX+qrS+16,y+35);
+  cx.font='16px Arial'; cx.fillStyle='rgba(90,154,170,0.65)';
+  cx.fillText('caoyuan0119-gif.github.io/ocean-blue',qrX+qrS+16,y+60);
+  y+=115;
+
+  // Footer
+  cx.font='17px Arial'; cx.fillStyle='rgba(90,154,170,0.3)'; cx.textAlign='center';
+  cx.fillText('让更多人看见海洋，才算真正守护它',W/2,y+25);
+
+  // Bottom border
+  const bb=cx.createLinearGradient(0,0,W,0);
+  bb.addColorStop(0,'transparent'); bb.addColorStop(0.5,'rgba(62,201,224,0.4)'); bb.addColorStop(1,'transparent');
+  cx.fillStyle=bb; cx.fillRect(0,H-3,W,3);
+}
+</script>
+</body>
+</html>
