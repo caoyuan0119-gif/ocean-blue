@@ -716,11 +716,12 @@ body::before {
 <div id="posterOverlay">
   <div class="poster-inner">
     <div class="poster-header">
-      <span class="poster-hint">长按图片保存到相册</span>
+      <span class="poster-hint">点击下方按钮保存图片</span>
       <button class="btn-close" id="closeBtn">关闭</button>
     </div>
     <canvas id="posterCanvas"></canvas>
-    <p class="poster-save-hint">长按图片 → 保存图片 → 发朋友圈<br>让朋友也来测测</p>
+    <button id="downloadBtn" style="display:block;width:100%;margin-top:1rem;background:rgba(62,201,224,0.15);border:1px solid rgba(62,201,224,0.5);color:#3ec9e0;padding:1rem;border-radius:12px;font-family:'Noto Sans SC',sans-serif;font-size:0.95rem;font-weight:500;letter-spacing:2px;cursor:pointer;">⬇ 保存海报图片</button>
+    <p class="poster-save-hint">保存后发朋友圈<br>让朋友也来测测自己是哪种海洋生物</p>
   </div>
 </div>
 
@@ -926,6 +927,7 @@ document.getElementById('startBtn').addEventListener('click', startQuiz);
 document.getElementById('retryBtn').addEventListener('click', restart);
 document.getElementById('posterBtn').addEventListener('click', generatePoster);
 document.getElementById('closeBtn').addEventListener('click', closePoster);
+document.getElementById('downloadBtn').addEventListener('click', downloadPoster);
 
 // ── FUNCTIONS ──
 function show(id){
@@ -1069,6 +1071,23 @@ function showResult(){
 }
 
 // ── POSTER ──
+function downloadPoster(){
+  const pc = document.getElementById('posterCanvas');
+  try {
+    const url = pc.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '我的海洋人格_' + (currentCreature ? currentCreature.name : '结果') + '.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch(e) {
+    // Fallback: open image in new tab for manual save
+    const url = pc.toDataURL('image/png');
+    window.open(url, '_blank');
+  }
+}
+
 function generatePoster(){
   if(!currentCreature) return;
   document.getElementById('posterOverlay').style.display = 'block';
