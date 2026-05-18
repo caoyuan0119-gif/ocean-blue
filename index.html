@@ -1074,16 +1074,15 @@ function showResult(){
 function downloadPoster(){
   const pc = document.getElementById('posterCanvas');
   try {
-    const url = pc.toDataURL('image/png');
+    const url = pc.toDataURL('image/jpeg', 0.92);
     const a = document.createElement('a');
     a.href = url;
-    a.download = '我的海洋人格_' + (currentCreature ? currentCreature.name : '结果') + '.png';
+    a.download = '我的海洋人格_' + (currentCreature ? currentCreature.name : '结果') + '.jpg';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
   } catch(e) {
-    // Fallback: open image in new tab for manual save
-    const url = pc.toDataURL('image/png');
+    const url = pc.toDataURL('image/jpeg', 0.92);
     window.open(url, '_blank');
   }
 }
@@ -1137,7 +1136,11 @@ function drawPoster(c, cImg){
     cx.fillStyle=tg; cx.fillRect(x,y,w,1);
   }
 
-  // BG
+  // BG - fill white first for JPG
+  cx.fillStyle = '#ffffff';
+  cx.fillRect(0,0,W,H);
+
+  // Ocean gradient
   const bg=cx.createLinearGradient(0,0,0,H);
   bg.addColorStop(0,'#020d18'); bg.addColorStop(0.5,'#041a28'); bg.addColorStop(1,'#020810');
   cx.fillStyle=bg; cx.fillRect(0,0,W,H);
@@ -1287,17 +1290,23 @@ function drawPoster(c, cImg){
   cx.fillText(c.src,W/2,y+158);
   y+=195; div(y,0.15); y+=25;
 
-  // QR
+  // QR - real image
   box(W/2-200,y,400,95,'rgba(62,201,224,0.2)','rgba(7,36,56,0.7)');
-  const qrX=W/2-190,qrT=y+16,qrS=64,cell=qrS/7;
-  const qp=[[1,1,1,0,1,1,1],[1,0,1,0,1,0,1],[1,1,1,0,1,1,1],[0,0,0,0,0,0,0],[1,1,1,0,1,1,1],[1,0,1,0,1,0,1],[1,1,1,0,1,1,1]];
-  qp.forEach((row,r)=>row.forEach((v,cc)=>{
-    if(v){cx.fillStyle='rgba(62,201,224,0.85)';cx.fillRect(qrX+cc*cell+0.5,qrT+r*cell+0.5,cell-1,cell-1);}
-  }));
+  const qrImg = new Image();
+  qrImg.crossOrigin = 'anonymous';
+  qrImg.src = BASE + 'qrcode.png';
+  try { cx.drawImage(qrImg, W/2-190, y+14, 68, 68); } catch(e) {
+    // fallback decorative QR
+    const qrX2=W/2-190,qrT2=y+16,qrS2=64,cell2=qrS2/7;
+    const qp2=[[1,1,1,0,1,1,1],[1,0,1,0,1,0,1],[1,1,1,0,1,1,1],[0,0,0,0,0,0,0],[1,1,1,0,1,1,1],[1,0,1,0,1,0,1],[1,1,1,0,1,1,1]];
+    qp2.forEach((row,r)=>row.forEach((v,cc)=>{
+      if(v){cx.fillStyle='rgba(62,201,224,0.85)';cx.fillRect(qrX2+cc*cell2+0.5,qrT2+r*cell2+0.5,cell2-1,cell2-1);}
+    }));
+  }
   cx.font='bold 21px Arial'; cx.fillStyle='#3ec9e0'; cx.textAlign='left';
-  cx.fillText('扫码 · 测测你是哪种海洋生物',qrX+qrS+16,y+35);
+  cx.fillText('扫码 · 测测你是哪种海洋生物',W/2-190+68+16,y+35);
   cx.font='16px Arial'; cx.fillStyle='rgba(90,154,170,0.65)';
-  cx.fillText('caoyuan0119-gif.github.io/ocean-blue',qrX+qrS+16,y+60);
+  cx.fillText('caoyuan0119-gif.github.io/ocean-blue',W/2-190+68+16,y+60);
   y+=115;
 
   // Footer
