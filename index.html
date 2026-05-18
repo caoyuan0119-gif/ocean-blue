@@ -716,15 +716,98 @@ body::before {
 <div id="posterOverlay">
   <div class="poster-inner">
     <div class="poster-header">
-      <span class="poster-hint">点击下方按钮保存图片</span>
+      <span class="poster-hint">截图保存 · 发朋友圈</span>
       <button class="btn-close" id="closeBtn">关闭</button>
     </div>
-    <canvas id="posterCanvas"></canvas>
-    <button id="downloadBtn" style="display:block;width:100%;margin-top:1rem;background:rgba(62,201,224,0.15);border:1px solid rgba(62,201,224,0.5);color:#3ec9e0;padding:1rem;border-radius:12px;font-family:'Noto Sans SC',sans-serif;font-size:0.95rem;font-weight:500;letter-spacing:2px;cursor:pointer;">⬇ 保存海报图片</button>
-    <p class="poster-save-hint">保存后发朋友圈<br>让朋友也来测测自己是哪种海洋生物</p>
+
+    <!-- HTML Poster -->
+    <div id="htmlPoster" style="
+      background: linear-gradient(180deg, #020d18 0%, #041a28 50%, #020810 100%);
+      border-radius: 16px;
+      padding: 1.8rem 1.4rem;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(62,201,224,0.2);
+    ">
+      <!-- Top glow line -->
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,rgba(62,201,224,0.8),transparent);"></div>
+
+      <!-- Brand -->
+      <p style="text-align:center;font-size:10px;letter-spacing:3px;color:rgba(90,154,170,0.6);margin-bottom:1.2rem;">海洋卫士公益 × 一个世界 · 2026</p>
+
+      <!-- Animal image -->
+      <div style="text-align:center;margin-bottom:0.8rem;">
+        <img id="pImg" src="" style="width:140px;height:140px;object-fit:contain;filter:drop-shadow(0 0 20px rgba(62,201,224,0.5));">
+      </div>
+
+      <!-- Code -->
+      <p id="pCode" style="text-align:center;font-family:monospace;font-size:0.85rem;font-weight:700;letter-spacing:5px;color:#3ec9e0;text-shadow:0 0 12px rgba(62,201,224,0.6);margin-bottom:0.3rem;"></p>
+
+      <!-- Name -->
+      <p id="pName" style="text-align:center;font-family:'Noto Serif SC',serif;font-size:1.8rem;font-weight:900;color:#d8eff5;margin-bottom:0.2rem;"></p>
+
+      <!-- Tagline -->
+      <p id="pTagline" style="text-align:center;font-size:0.78rem;color:rgba(90,154,170,0.7);font-style:italic;margin-bottom:1.2rem;"></p>
+
+      <!-- Divider -->
+      <div style="height:1px;background:linear-gradient(to right,transparent,rgba(62,201,224,0.3),transparent);margin-bottom:1rem;"></div>
+
+      <!-- Axes -->
+      <div id="pAxes" style="margin-bottom:1rem;"></div>
+
+      <!-- Divider -->
+      <div style="height:1px;background:linear-gradient(to right,transparent,rgba(62,201,224,0.2),transparent);margin-bottom:1rem;"></div>
+
+      <!-- Desc -->
+      <div style="background:rgba(7,36,56,0.5);border:1px solid rgba(62,201,224,0.15);border-radius:12px;padding:1rem;margin-bottom:0.7rem;">
+        <p style="font-size:9px;letter-spacing:2px;color:rgba(62,201,224,0.6);margin-bottom:0.5rem;font-family:monospace;">✦ 你是这种人</p>
+        <p id="pDesc" style="font-size:0.78rem;line-height:1.85;color:rgba(216,239,245,0.85);"></p>
+        <div id="pTraits" style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.7rem;"></div>
+      </div>
+
+      <!-- Shadow -->
+      <div style="background:rgba(2,8,16,0.8);border:1px solid rgba(62,201,224,0.2);border-radius:12px;padding:1rem;margin-bottom:0.7rem;">
+        <p style="font-size:9px;letter-spacing:2px;color:rgba(200,180,180,0.6);margin-bottom:0.5rem;font-family:monospace;">🌑 阴暗面</p>
+        <p id="pShadow" style="font-size:0.78rem;line-height:1.85;color:rgba(180,150,150,0.85);"></p>
+      </div>
+
+      <!-- Stab -->
+      <div style="background:rgba(20,5,5,0.6);border:1px solid rgba(255,107,107,0.2);border-radius:12px;padding:0.8rem;margin-bottom:1rem;">
+        <p style="font-size:9px;letter-spacing:2px;color:rgba(255,150,150,0.6);margin-bottom:0.4rem;font-family:monospace;">🗡️ 朋友补刀</p>
+        <p id="pStab" style="font-size:0.78rem;color:rgba(255,200,200,0.85);font-style:italic;"></p>
+      </div>
+
+      <!-- Quote -->
+      <div style="background:rgba(13,58,82,0.35);border:1px solid rgba(62,201,224,0.2);border-radius:12px;padding:1.2rem;margin-bottom:1rem;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,rgba(62,201,224,0.4),transparent);"></div>
+        <p style="position:absolute;top:-0.8rem;left:0.6rem;font-size:4rem;color:rgba(62,201,224,0.07);font-family:serif;line-height:1;">"</p>
+        <p id="pQuote" style="font-family:'Noto Serif SC',serif;font-size:0.85rem;line-height:2;color:#d8eff5;position:relative;text-align:center;"></p>
+        <p id="pSrc" style="font-size:9px;color:rgba(62,201,224,0.5);margin-top:0.6rem;letter-spacing:1px;position:relative;text-align:center;"></p>
+      </div>
+
+      <!-- QR -->
+      <div style="background:rgba(7,36,56,0.7);border:1px solid rgba(62,201,224,0.2);border-radius:12px;padding:0.9rem;display:flex;align-items:center;gap:0.9rem;">
+        <img src="https://caoyuan0119-gif.github.io/ocean-blue/qrcode.png" style="width:60px;height:60px;object-fit:contain;flex-shrink:0;">
+        <div>
+          <p style="font-size:0.78rem;font-weight:500;color:#3ec9e0;margin-bottom:0.2rem;">扫码 · 测测你是哪种海洋生物</p>
+          <p style="font-size:10px;color:rgba(90,154,170,0.6);">caoyuan0119-gif.github.io/ocean-blue</p>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <p style="text-align:center;font-size:9px;color:rgba(90,154,170,0.3);margin-top:1rem;letter-spacing:1.5px;">让更多人看见海洋，才算真正守护它</p>
+
+      <!-- Bottom glow -->
+      <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,rgba(62,201,224,0.4),transparent);"></div>
+    </div>
+
+    <p class="poster-save-hint" style="margin-top:0.8rem;">📱 点击下方按钮保存海报</p>
+    <button id="downloadBtn" style="display:block;width:100%;margin-top:0.8rem;background:rgba(62,201,224,0.15);border:1px solid rgba(62,201,224,0.5);color:#3ec9e0;padding:1rem;border-radius:12px;font-family:'Noto Sans SC',sans-serif;font-size:0.95rem;font-weight:500;letter-spacing:2px;cursor:pointer;">⬇ 保存海报图片</button>
+    <p class="poster-save-hint" style="margin-top:0.5rem;">保存后发朋友圈 · 让朋友也来测测</p>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 // ── IMAGE BASE URL ──
 const BASE = 'https://caoyuan0119-gif.github.io/ocean-blue/';
@@ -1087,15 +1170,76 @@ function downloadPoster(){
   }
 }
 
+function downloadPoster(){
+  const btn = document.getElementById('downloadBtn');
+  btn.textContent = '生成中...';
+  btn.disabled = true;
+
+  const poster = document.getElementById('htmlPoster');
+  html2canvas(poster, {
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#020d18',
+    logging: false
+  }).then(canvas => {
+    const url = canvas.toDataURL('image/jpeg', 0.92);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '我的海洋人格_' + (currentCreature ? currentCreature.name : '结果') + '.jpg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    btn.textContent = '⬇ 保存海报图片';
+    btn.disabled = false;
+  }).catch(()=>{
+    // Fallback: open in new tab
+    const url = poster.outerHTML;
+    alert('请截图保存海报');
+    btn.textContent = '⬇ 保存海报图片';
+    btn.disabled = false;
+  });
+}
+
 function generatePoster(){
   if(!currentCreature) return;
+  const c = currentCreature;
+
+  // Fill HTML poster
+  document.getElementById('pImg').src = img(c.key);
+  document.getElementById('pCode').textContent = c.code;
+  document.getElementById('pName').textContent = c.name;
+  document.getElementById('pTagline').textContent = c.tagline;
+  document.getElementById('pDesc').textContent = c.desc;
+  document.getElementById('pShadow').textContent = c.shadow;
+  document.getElementById('pStab').textContent = c.stab;
+  document.getElementById('pQuote').innerHTML = c.quote.replace(/\n/g,'<br>');
+  document.getElementById('pSrc').textContent = c.src;
+
+  document.getElementById('pTraits').innerHTML = c.traits.map(t=>
+    `<span style="border:1px solid rgba(62,201,224,0.3);color:#3ec9e0;font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(62,201,224,0.06);">${t}</span>`
+  ).join('');
+
+  const axes=[
+    {l:'独处型',r:'群体型',pct:c.axes.WC,lw:c.axes.WC<50},
+    {l:'直觉型',r:'深思型',pct:c.axes.DS,lw:c.axes.DS<50},
+    {l:'感性型',r:'理性型',pct:c.axes.FT,lw:c.axes.FT<50},
+    {l:'慢节奏',r:'行动派',pct:c.axes.DK,lw:c.axes.DK<50},
+  ];
+
+  document.getElementById('pAxes').innerHTML = axes.map(a=>`
+    <div style="margin-bottom:0.7rem;">
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px;font-family:monospace;">
+        <span style="color:${a.lw?'#3ec9e0':'rgba(90,154,170,0.45)'};">${a.l}</span>
+        <span style="color:${!a.lw?'#3ec9e0':'rgba(90,154,170,0.45)'};">${a.r}</span>
+      </div>
+      <div style="height:6px;background:rgba(62,201,224,0.08);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${a.pct}%;background:linear-gradient(to right,#0d3a52,#3ec9e0);border-radius:3px;box-shadow:0 0 6px rgba(62,201,224,0.3);"></div>
+      </div>
+    </div>`).join('');
+
   document.getElementById('posterOverlay').style.display = 'block';
   window.scrollTo(0,0);
-  const i = new Image();
-  i.crossOrigin = 'anonymous';
-  i.onload = ()=>drawPoster(currentCreature, i);
-  i.onerror = ()=>drawPoster(currentCreature, null);
-  i.src = img(currentCreature.key);
 }
 
 function closePoster(){
