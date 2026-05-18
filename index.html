@@ -1182,107 +1182,99 @@ function downloadPoster(){
   var btn = document.getElementById('downloadBtn');
   btn.textContent = '生成中...';
   btn.disabled = true;
-
   if(!currentCreature){ btn.textContent='⬇ 保存海报图片'; btn.disabled=false; return; }
   var c = currentCreature;
 
-  // Load animal image
-  var animalImg = new Image();
-  var qrImage = new Image();
-  var loaded = 0;
+  var pc = document.createElement('canvas');
+  var W=750, H=1900;
+  pc.width=W; pc.height=H;
+  var ctx=pc.getContext('2d');
 
-  function onLoad(){
-    loaded++;
-    if(loaded < 2) return;
-    drawCanvasPoster(c, animalImg, qrImage, btn);
-  }
-
-  animalImg.onload = onLoad;
-  animalImg.onerror = function(){ loaded++; if(loaded>=2) drawCanvasPoster(c,null,qrImage,btn); };
-  animalImg.src = IMGS_B64[c.key] || '';
-
-  qrImage.onload = onLoad;
-  qrImage.onerror = function(){ loaded++; if(loaded>=2) drawCanvasPoster(c,animalImg,null,btn); };
-  qrImage.src = QR_B64;
+  // Load animal first
+  var a1 = new Image();
+  a1.onload = function(){
+    var a2 = new Image();
+    a2.onload = function(){
+      renderPoster(ctx, pc, W, H, c, a1, a2, btn);
+    };
+    a2.onerror = function(){
+      renderPoster(ctx, pc, W, H, c, a1, null, btn);
+    };
+    a2.src = QR_B64;
+  };
+  a1.onerror = function(){
+    var a2 = new Image();
+    a2.onload = function(){
+      renderPoster(ctx, pc, W, H, c, null, a2, btn);
+    };
+    a2.src = QR_B64;
+  };
+  a1.src = IMGS_B64[c.key] || '';
 }
 
-function drawCanvasPoster(c, animalImg, qrImg, btn){
-  var pc = document.createElement('canvas');
-  var W=750, H=1800;
-  pc.width=W; pc.height=H;
-  var cx=pc.getContext('2d');
-
-  function wrapText(text,x,y,maxW,lineH,fs,col){
-    cx.font=fs+'px Arial'; cx.fillStyle=col; cx.textAlign='left';
-    var words=text.split(''); var line=''; var cy=y;
+function renderPoster(ctx, pc, W, H, c, animalImg, qrImg, btn){
+  function wrap(text,x,y,maxW,lineH,fs,col){
+    ctx.font=fs+'px Arial'; ctx.fillStyle=col; ctx.textAlign='left';
+    var line=''; var cy=y;
     for(var i=0;i<text.length;i++){
       var t=line+text[i];
-      if(cx.measureText(t).width>maxW&&line!==''){cx.fillText(line,x,cy);line=text[i];cy+=lineH;}
+      if(ctx.measureText(t).width>maxW&&line!==''){ctx.fillText(line,x,cy);line=text[i];cy+=lineH;}
       else line=t;
     }
-    if(line)cx.fillText(line,x,cy);
+    if(line) ctx.fillText(line,x,cy);
     return cy+lineH;
   }
 
   function box(x,y,w,h,bc,fc){
-    cx.fillStyle=fc||'rgba(7,36,56,0.5)';
-    cx.beginPath();cx.roundRect(x,y,w,h,14);cx.fill();
-    cx.strokeStyle=bc||'rgba(62,201,224,0.15)';cx.lineWidth=1;
-    cx.beginPath();cx.roundRect(x,y,w,h,14);cx.stroke();
-    var tg=cx.createLinearGradient(x,0,x+w,0);
-    tg.addColorStop(0,'transparent');tg.addColorStop(0.5,bc||'rgba(62,201,224,0.15)');tg.addColorStop(1,'transparent');
-    cx.fillStyle=tg;cx.fillRect(x,y,w,1);
+    ctx.fillStyle=fc||'rgba(7,36,56,0.5)';
+    ctx.beginPath();ctx.roundRect(x,y,w,h,14);ctx.fill();
+    ctx.strokeStyle=bc||'rgba(62,201,224,0.15)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.roundRect(x,y,w,h,14);ctx.stroke();
   }
 
-  function div(y,a){ var g=cx.createLinearGradient(50,0,W-50,0);
+  function divLine(y,a){
+    var g=ctx.createLinearGradient(50,0,W-50,0);
     g.addColorStop(0,'transparent');g.addColorStop(0.5,'rgba(62,201,224,'+(a||0.2)+')');g.addColorStop(1,'transparent');
-    cx.fillStyle=g;cx.fillRect(50,y,W-100,1); }
+    ctx.fillStyle=g;ctx.fillRect(50,y,W-100,1);
+  }
 
   // BG
-  var bg=cx.createLinearGradient(0,0,0,H);
+  var bg=ctx.createLinearGradient(0,0,0,H);
   bg.addColorStop(0,'#020d18');bg.addColorStop(0.5,'#041a28');bg.addColorStop(1,'#020810');
-  cx.fillStyle=bg;cx.fillRect(0,0,W,H);
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
 
-  // Glow
-  var gl=cx.createRadialGradient(W/2,0,0,W/2,0,W*0.8);
+  var gl=ctx.createRadialGradient(W/2,0,0,W/2,0,W*0.8);
   gl.addColorStop(0,'rgba(62,201,224,0.1)');gl.addColorStop(1,'transparent');
-  cx.fillStyle=gl;cx.fillRect(0,0,W,H);
+  ctx.fillStyle=gl;ctx.fillRect(0,0,W,H);
 
-  // Top border
-  var tb=cx.createLinearGradient(0,0,W,0);
+  var tb=ctx.createLinearGradient(0,0,W,0);
   tb.addColorStop(0,'transparent');tb.addColorStop(0.5,'rgba(62,201,224,0.8)');tb.addColorStop(1,'transparent');
-  cx.fillStyle=tb;cx.fillRect(0,0,W,3);
+  ctx.fillStyle=tb;ctx.fillRect(0,0,W,3);
 
   // Brand
-  cx.font='400 19px Arial';cx.fillStyle='rgba(90,154,170,0.6)';cx.textAlign='center';
-  cx.fillText('海洋卫士公益 × 一个世界 · 2026',W/2,52);
+  ctx.font='19px Arial';ctx.fillStyle='rgba(90,154,170,0.6)';ctx.textAlign='center';
+  ctx.fillText('海洋卫士公益 × 一个世界 · 2026',W/2,52);
 
-  // Animal image
-  if(animalImg){
-    cx.save();cx.shadowColor='rgba(62,201,224,0.5)';cx.shadowBlur=30;
-    cx.drawImage(animalImg,W/2-100,70,200,200);cx.restore();
-  }
+  // Animal
+  if(animalImg) ctx.drawImage(animalImg,W/2-110,68,220,220);
 
   // Code
-  cx.font='bold 24px monospace';cx.fillStyle='#3ec9e0';cx.textAlign='center';
-  cx.shadowColor='rgba(62,201,224,0.8)';cx.shadowBlur=15;
-  cx.fillText(c.code,W/2,305);cx.shadowBlur=0;
+  ctx.font='bold 24px monospace';ctx.fillStyle='#3ec9e0';ctx.textAlign='center';
+  ctx.shadowColor='rgba(62,201,224,0.8)';ctx.shadowBlur=15;
+  ctx.fillText(c.code,W/2,318);ctx.shadowBlur=0;
 
   // Name
-  cx.font='bold 62px serif';cx.fillStyle='#d8eff5';cx.textAlign='center';
-  cx.shadowColor='rgba(62,201,224,0.2)';cx.shadowBlur=20;
-  cx.fillText(c.name,W/2,378);cx.shadowBlur=0;
+  ctx.font='bold 62px serif';ctx.fillStyle='#d8eff5';ctx.textAlign='center';
+  ctx.fillText(c.name,W/2,388);
 
   // Tagline
-  cx.font='italic 24px serif';cx.fillStyle='rgba(90,154,170,0.8)';cx.textAlign='center';
-  cx.fillText(c.tagline,W/2,415);
+  ctx.font='italic 24px serif';ctx.fillStyle='rgba(90,154,170,0.8)';ctx.textAlign='center';
+  ctx.fillText(c.tagline,W/2,424);
 
-  div(435,0.3);
+  divLine(444,0.3);
 
   // Axes
-  var y=460;
-  cx.font='18px Arial';cx.fillStyle='rgba(62,201,224,0.6)';cx.textAlign='left';
-  cx.fillText('人格维度',55,y);y+=26;
+  var y=468;
   var axes=[
     {l:'独处型',r:'群体型',pct:c.axes.WC,lw:c.axes.WC<50},
     {l:'直觉型',r:'深思型',pct:c.axes.DS,lw:c.axes.DS<50},
@@ -1290,84 +1282,86 @@ function drawCanvasPoster(c, animalImg, qrImg, btn){
     {l:'慢节奏',r:'行动派',pct:c.axes.DK,lw:c.axes.DK<50},
   ];
   axes.forEach(function(a){
-    cx.font='19px Arial';
-    cx.textAlign='left';cx.fillStyle=a.lw?'#3ec9e0':'rgba(90,154,170,0.45)';cx.fillText(a.l,55,y);
-    cx.textAlign='right';cx.fillStyle=!a.lw?'#3ec9e0':'rgba(90,154,170,0.45)';cx.fillText(a.r,W-55,y);
+    ctx.font='19px Arial';
+    ctx.textAlign='left';ctx.fillStyle=a.lw?'#3ec9e0':'rgba(90,154,170,0.45)';ctx.fillText(a.l,55,y);
+    ctx.textAlign='right';ctx.fillStyle=!a.lw?'#3ec9e0':'rgba(90,154,170,0.45)';ctx.fillText(a.r,W-55,y);
     y+=12;
-    cx.fillStyle='rgba(62,201,224,0.08)';cx.beginPath();cx.roundRect(55,y,W-110,8,4);cx.fill();
-    var bg2=cx.createLinearGradient(55,0,W-55,0);
+    ctx.fillStyle='rgba(62,201,224,0.08)';ctx.beginPath();ctx.roundRect(55,y,W-110,8,4);ctx.fill();
+    var bg2=ctx.createLinearGradient(55,0,W-55,0);
     bg2.addColorStop(0,'rgba(13,58,82,0.9)');bg2.addColorStop(1,'#3ec9e0');
-    cx.fillStyle=bg2;cx.shadowColor='rgba(62,201,224,0.4)';cx.shadowBlur=5;
-    cx.beginPath();cx.roundRect(55,y,(W-110)*(a.pct/100),8,4);cx.fill();cx.shadowBlur=0;
+    ctx.fillStyle=bg2;ctx.shadowColor='rgba(62,201,224,0.3)';ctx.shadowBlur=4;
+    ctx.beginPath();ctx.roundRect(55,y,(W-110)*(a.pct/100),8,4);ctx.fill();ctx.shadowBlur=0;
     y+=35;
   });
 
-  div(y,0.15);y+=22;
+  divLine(y,0.15);y+=22;
 
   // Traits
-  cx.font='18px Arial';cx.fillStyle='rgba(62,201,224,0.6)';cx.textAlign='left';
-  cx.fillText('人格标签',55,y);y+=28;
+  ctx.font='18px Arial';ctx.fillStyle='rgba(62,201,224,0.6)';ctx.textAlign='left';
+  ctx.fillText('人格标签',55,y);y+=28;
   var tx=55;
   c.traits.forEach(function(tr){
-    var tw=cx.measureText(tr).width+24;
+    var tw=ctx.measureText(tr).width+24;
     if(tx+tw>W-55){tx=55;y+=40;}
-    cx.strokeStyle='rgba(62,201,224,0.3)';cx.lineWidth=1;cx.fillStyle='rgba(62,201,224,0.06)';
-    cx.beginPath();cx.roundRect(tx,y-20,tw,30,15);cx.fill();cx.stroke();
-    cx.fillStyle='#3ec9e0';cx.textAlign='left';cx.fillText(tr,tx+12,y-1);
+    ctx.strokeStyle='rgba(62,201,224,0.3)';ctx.lineWidth=1;
+    ctx.fillStyle='rgba(62,201,224,0.06)';
+    ctx.beginPath();ctx.roundRect(tx,y-20,tw,30,15);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#3ec9e0';ctx.textAlign='left';ctx.fillText(tr,tx+12,y-1);
     tx+=tw+10;
   });
-  y+=42;div(y,0.12);y+=22;
+  y+=42;divLine(y,0.12);y+=22;
 
   // Desc
-  box(40,y,W-80,185);
-  cx.font='18px Arial';cx.fillStyle='rgba(62,201,224,0.6)';cx.textAlign='left';cx.fillText('✦  你是这种人',58,y+28);
-  y=wrapText(c.desc,58,y+52,W-116,30,20,'rgba(216,239,245,0.85)');
-  y+=18;div(y,0.1);y+=20;
+  box(40,y,W-80,190);
+  ctx.font='18px Arial';ctx.fillStyle='rgba(62,201,224,0.6)';ctx.textAlign='left';ctx.fillText('✦  你是这种人',58,y+28);
+  y=wrap(c.desc,58,y+52,W-116,30,20,'rgba(216,239,245,0.85)');
+  y+=18;divLine(y,0.1);y+=20;
 
   // Shadow
-  box(40,y,W-80,185,'rgba(62,201,224,0.2)','rgba(2,8,16,0.7)');
-  cx.font='18px Arial';cx.fillStyle='rgba(200,180,180,0.6)';cx.textAlign='left';cx.fillText('🌑  阴暗面',58,y+28);
-  y=wrapText(c.shadow,58,y+52,W-116,30,20,'rgba(180,150,150,0.85)');
-  y+=18;div(y,0.1);y+=20;
+  box(40,y,W-80,190,'rgba(62,201,224,0.2)','rgba(2,8,16,0.7)');
+  ctx.font='18px Arial';ctx.fillStyle='rgba(200,180,180,0.6)';ctx.textAlign='left';ctx.fillText('🌑  阴暗面',58,y+28);
+  y=wrap(c.shadow,58,y+52,W-116,30,20,'rgba(180,150,150,0.85)');
+  y+=18;divLine(y,0.1);y+=20;
 
   // Stab
   box(40,y,W-80,75,'rgba(255,107,107,0.2)','rgba(20,5,5,0.5)');
-  cx.font='18px Arial';cx.fillStyle='rgba(255,150,150,0.6)';cx.textAlign='left';cx.fillText('🗡️  朋友补刀',58,y+26);
-  cx.font='italic 20px Arial';cx.fillStyle='rgba(255,200,200,0.85)';cx.fillText(c.stab,58,y+56);
-  y+=95;div(y,0.1);y+=20;
+  ctx.font='18px Arial';ctx.fillStyle='rgba(255,150,150,0.6)';ctx.textAlign='left';ctx.fillText('🗡️  朋友补刀',58,y+26);
+  ctx.font='italic 20px Arial';ctx.fillStyle='rgba(255,200,200,0.85)';
+  ctx.fillText(c.stab,58,y+56);
+  y+=95;divLine(y,0.1);y+=20;
 
   // Quote
-  box(40,y,W-80,155,'rgba(62,201,224,0.2)','rgba(13,58,82,0.35)');
-  cx.font='italic 23px serif';cx.fillStyle='rgba(216,239,245,0.9)';cx.textAlign='center';
+  box(40,y,W-80,158,'rgba(62,201,224,0.2)','rgba(13,58,82,0.35)');
+  ctx.font='italic 23px serif';ctx.fillStyle='rgba(216,239,245,0.9)';ctx.textAlign='center';
   var qlines=c.quote.split('
 ');
-  qlines.forEach(function(line,i){cx.fillText(line,W/2,y+35+i*34);});
-  cx.font='15px Arial';cx.fillStyle='rgba(62,201,224,0.5)';
-  cx.fillText(c.src,W/2,y+138);
-  y+=175;
+  qlines.forEach(function(line,i){ctx.fillText(line,W/2,y+35+i*34);});
+  ctx.font='15px Arial';ctx.fillStyle='rgba(62,201,224,0.5)';
+  ctx.fillText(c.src,W/2,y+140);
+  y+=178;
 
-  // QR area
+  // QR
   box(40,y,W-80,90,'rgba(62,201,224,0.2)','rgba(7,36,56,0.7)');
-  if(qrImg){cx.drawImage(qrImg,58,y+13,65,65);}
-  cx.font='bold 20px Arial';cx.fillStyle='#3ec9e0';cx.textAlign='left';
-  cx.fillText('扫码 · 测测你是哪种海洋生物',135,y+33);
-  cx.font='15px Arial';cx.fillStyle='rgba(90,154,170,0.6)';
-  cx.fillText('caoyuan0119-gif.github.io/ocean-blue',135,y+57);
+  if(qrImg) ctx.drawImage(qrImg,58,y+13,65,65);
+  ctx.font='bold 20px Arial';ctx.fillStyle='#3ec9e0';ctx.textAlign='left';
+  ctx.fillText('扫码 · 测测你是哪种海洋生物',135,y+33);
+  ctx.font='15px Arial';ctx.fillStyle='rgba(90,154,170,0.6)';
+  ctx.fillText('caoyuan0119-gif.github.io/ocean-blue',135,y+57);
   y+=110;
 
   // Footer
-  cx.font='15px Arial';cx.fillStyle='rgba(90,154,170,0.3)';cx.textAlign='center';
-  cx.fillText('让更多人看见海洋，才算真正守护它',W/2,y+25);
+  ctx.font='15px Arial';ctx.fillStyle='rgba(90,154,170,0.3)';ctx.textAlign='center';
+  ctx.fillText('让更多人看见海洋，才算真正守护它',W/2,y+25);
 
-  var bb=cx.createLinearGradient(0,0,W,0);
+  var bb=ctx.createLinearGradient(0,0,W,0);
   bb.addColorStop(0,'transparent');bb.addColorStop(0.5,'rgba(62,201,224,0.4)');bb.addColorStop(1,'transparent');
-  cx.fillStyle=bb;cx.fillRect(0,H-3,W,3);
+  ctx.fillStyle=bb;ctx.fillRect(0,H-3,W,3);
 
-  // Save
+  // Save as JPG
   var url=pc.toDataURL('image/jpeg',0.92);
   var a=document.createElement('a');
   a.href=url;
-  a.download='我的海洋人格_'+(c.name||'结果')+'.jpg';
+  a.download='我的海洋人格_'+c.name+'.jpg';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   btn.textContent='⬇ 保存海报图片';btn.disabled=false;
 }
